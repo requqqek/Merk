@@ -50,3 +50,45 @@ data class SubmissionItem(
     @SerializedName("assignmentTitle") val assignmentTitle: String? = null,
     @SerializedName("submittedAt") val submittedAt: String? = null
 )
+
+// Создание задания
+data class CreateAssignmentRequest(
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("correctAnswer") val correctAnswer: String
+)
+
+// Студент учителя
+data class StudentItem(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("login") val login: String,
+    @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("groupId") val groupId: Int?,
+    @SerializedName("groupName") val groupName: String?
+)
+
+// Группа
+data class GroupItem(
+    @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String
+)
+
+// Профиль пользователя
+data class UserProfile(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("login") val login: String,
+    @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("role") val role: String,
+    @SerializedName("groupId") val groupId: Int?,
+    @SerializedName("groupName") val groupName: String?
+)
+
+// Обновление профиля
+data class UpdateProfileRequest(
+    @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("password") val password: String?
+)

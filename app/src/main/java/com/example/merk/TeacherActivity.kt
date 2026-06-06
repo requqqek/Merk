@@ -2,14 +2,9 @@ package com.example.merk
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import com.example.merk.fragments.CreateStudentFragment
-import com.example.merk.fragments.ProfileFragment
-import com.example.merk.fragments.StatsFragment
+import com.example.merk.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class TeacherActivity : AppCompatActivity() {
@@ -23,14 +18,14 @@ class TeacherActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        if (savedInstanceState == null) loadFragment(StatsFragment())
+        if (savedInstanceState == null) loadFragment(CreateAssignmentFragment())
 
         bottomNav.setOnItemSelectedListener {
             loadFragment(when (it.itemId) {
                 R.id.nav_stats -> StatsFragment()
-                R.id.nav_create -> CreateStudentFragment()
+                R.id.nav_create -> CreateAssignmentFragment()
                 R.id.nav_profile -> ProfileFragment()
-                else -> StatsFragment()
+                else -> CreateAssignmentFragment()
             })
             true
         }
