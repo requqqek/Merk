@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Создать студента"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <EditText android:id="@+id/etLogin"
+            android:layout_width="match_parent" android:layout_height="56dp"
+            android:layout_marginBottom="12dp" android:background="@drawable/edit_text_bg"
+            android:hint="Логин" android:inputType="text" android:padding="14dp"
+            android:textColor="@color/black" android:textColorHint="@color/gray_text" android:textSize="16sp" />
+
+        <EditText android:id="@+id/etEmail"
+            android:layout_width="match_parent" android:layout_height="56dp"
+            android:layout_marginBottom="12dp" android:background="@drawable/edit_text_bg"
+            android:hint="Email" android:inputType="textEmailAddress" android:padding="14dp"
+            android:textColor="@color/black" android:textColorHint="@color/gray_text" android:textSize="16sp" />
+
+        <EditText android:id="@+id/etPhone"
+            android:layout_width="match_parent" android:layout_height="56dp"
+            android:layout_marginBottom="12dp" android:background="@drawable/edit_text_bg"
+            android:hint="Телефон" android:inputType="phone" android:padding="14dp"
+            android:textColor="@color/black" android:textColorHint="@color/gray_text" android:textSize="16sp" />
+
+        <EditText android:id="@+id/etPassword"
+            android:layout_width="match_parent" android:layout_height="56dp"
+            android:layout_marginBottom="20dp" android:background="@drawable/edit_text_bg"
+            android:hint="Пароль" android:inputType="textPassword" android:padding="14dp"
+            android:textColor="@color/black" android:textColorHint="@color/gray_text" android:textSize="16sp" />
+
+        <ProgressBar android:id="@+id/progressBar"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center" android:layout_marginBottom="8dp" android:visibility="gone" />
+
+        <Button android:id="@+id/btnCreate"
+            style="@style/GreenButton"
+            android:layout_width="match_parent" android:layout_height="52dp"
+            android:text="Создать студента" />
+
+        <TextView android:id="@+id/tvResult"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:textSize="14sp" android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
