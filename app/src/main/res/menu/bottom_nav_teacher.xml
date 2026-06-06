@@ -5,7 +5,7 @@
         android:title="Статистика" />
     <item android:id="@+id/nav_create"
         android:icon="@drawable/ic_add_person"
-        android:title="Создать" />
+        android:title="Задания" />
     <item android:id="@+id/nav_profile"
         android:icon="@drawable/ic_person"
         android:title="Профиль" />

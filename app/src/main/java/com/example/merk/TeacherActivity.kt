@@ -11,6 +11,7 @@ import com.example.merk.fragments.CreateStudentFragment
 import com.example.merk.fragments.ProfileFragment
 import com.example.merk.fragments.StatsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.merk.fragments.CreateAssignmentFragment
 
 class TeacherActivity : AppCompatActivity() {
 
@@ -34,6 +35,19 @@ class TeacherActivity : AppCompatActivity() {
             })
             true
         }
+
+        if (savedInstanceState == null) loadFragment(CreateAssignmentFragment())
+
+        bottomNav.setOnItemSelectedListener {
+            loadFragment(when (it.itemId) {
+                R.id.nav_stats -> StatsFragment()
+                R.id.nav_create -> CreateAssignmentFragment()
+                R.id.nav_profile -> ProfileFragment()
+                else -> CreateAssignmentFragment()
+            })
+            true
+        }
+
     }
 
     private fun loadFragment(f: Fragment) {

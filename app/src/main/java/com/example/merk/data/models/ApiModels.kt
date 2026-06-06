@@ -24,8 +24,9 @@ data class Assignment(
     @SerializedName("id") val id: Int,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
-    @SerializedName("type") val type: String = "",
-    @SerializedName("correctAnswer") val correctAnswer: String = ""
+    @SerializedName("type") val type: String,
+    @SerializedName("options") val options: String? = null,
+    @SerializedName("correctAnswer") val correctAnswer: String
 )
 
 data class SubmissionRequest(
@@ -49,4 +50,23 @@ data class SubmissionItem(
     @SerializedName("studentLogin") val studentLogin: String? = null,
     @SerializedName("assignmentTitle") val assignmentTitle: String? = null,
     @SerializedName("submittedAt") val submittedAt: String? = null
+)
+
+data class AssignmentStatus(
+    @SerializedName("assignmentId") val assignmentId: Int,
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("options") val options: String? = null,
+    @SerializedName("isCompleted") val isCompleted: Boolean,
+    @SerializedName("grade") val grade: Int? = null,
+    @SerializedName("comment") val comment: String? = null
+) : java.io.Serializable
+
+data class CreateAssignmentRequest(
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("options") val options: String? = null,
+    @SerializedName("correctAnswer") val correctAnswer: String
 )

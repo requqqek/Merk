@@ -11,4 +11,5 @@
     <color name="nav_unselected">#999999</color>
     <color name="error_red">#D32F2F</color>
     <color name="success_green">#388E3C</color>
+    <color name="card_completed">#E8F5E9</color>
 </resources>
