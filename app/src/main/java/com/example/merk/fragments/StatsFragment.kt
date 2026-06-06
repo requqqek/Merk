@@ -1,6 +1,6 @@
 package com.example.merk.fragments
 
-import android.R
+import com.example.merk.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -60,20 +60,20 @@ class StatsFragment : Fragment() {
                 val studentNames = listOf("Все студенты") + students.map { it.login }
                 val studentAdapter = ArrayAdapter(
                     requireContext(),
-                    R.layout.simple_spinner_item,
+                    android.R.layout.simple_spinner_item,
                     studentNames
                 )
-                studentAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+                studentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 spinnerStudent.adapter = studentAdapter
 
                 // Spinner групп
                 val groupNames = listOf("Все группы") + groups.map { it.name }
                 val groupAdapter = ArrayAdapter(
                     requireContext(),
-                    R.layout.simple_spinner_item,
+                    android.R.layout.simple_spinner_item,
                     groupNames
                 )
-                groupAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+                groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 spinnerGroup.adapter = groupAdapter
 
             } catch (e: Exception) {
