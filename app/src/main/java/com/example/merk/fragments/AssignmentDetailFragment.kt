@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class AssignmentDetailFragment : Fragment() {
 
-    private lateinit var assignment: AssignmentStatus
+    private var assignment: AssignmentStatus? = null
     private var selectedIndices = mutableListOf<Int>()
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View =
@@ -26,8 +26,14 @@ class AssignmentDetailFragment : Fragment() {
     override fun onViewCreated(view: View, s: Bundle?) {
         super.onViewCreated(view, s)
 
-        // Получаем задание из аргументов (теперь AssignmentStatus!)
-        assignment = arguments?.getSerializable("assignment") as AssignmentStatus
+        assignment = arguments?.getSerializable("assignment") as? AssignmentStatus
+        if (assignment == null) {
+            Toast.makeText(requireContext(), "Ошибка загрузки задания", Toast.LENGTH_LONG).show()
+            parentFragmentManager.popBackStack()
+            return
+        }
+
+        val current = assignment!!
 
         val tvTitle = view.findViewById<TextView>(R.id.tvTitle)
         val tvDescription = view.findViewById<TextView>(R.id.tvDescription)
@@ -36,21 +42,18 @@ class AssignmentDetailFragment : Fragment() {
         val btnSubmit = view.findViewById<Button>(R.id.btnSubmit)
         val tvResult = view.findViewById<TextView>(R.id.tvResult)
 
-        tvTitle.text = assignment.title
-        tvDescription.text = assignment.description
+        tvTitle.text = current.title
+        tvDescription.text = current.description
 
-        when (assignment.type) {
+        when (current.type) {
             "SingleChoice", "MultipleChoice" -> {
                 container.visibility = View.VISIBLE
                 etAnswer.visibility = View.GONE
 
-                // Парсим варианты ответов из JSON
-                val optionsJson = assignment.options ?: "[]"
+                val optionsJson = current.options ?: "[]"
                 val options = try {
                     Gson().fromJson(optionsJson, Array<String>::class.java).toList()
-                } catch (e: Exception) {
-                    emptyList()
-                }
+                } catch (e: Exception) { emptyList() }
 
                 container.removeAllViews()
                 selectedIndices.clear()
@@ -63,13 +66,10 @@ class AssignmentDetailFragment : Fragment() {
                         setPadding(8, 16, 8, 16)
                         setOnCheckedChangeListener { _, isChecked ->
                             if (isChecked) {
-                                if (assignment.type == "SingleChoice") {
-                                    // Снимаем выделение с других
+                                if (current.type == "SingleChoice") {
                                     for (j in 0 until container.childCount) {
                                         val child = container.getChildAt(j)
-                                        if (child is CheckBox && child.tag != index) {
-                                            child.isChecked = false
-                                        }
+                                        if (child is CheckBox && child.tag != index) child.isChecked = false
                                     }
                                     selectedIndices.clear()
                                     selectedIndices.add(index)
@@ -87,12 +87,12 @@ class AssignmentDetailFragment : Fragment() {
             "TextInput", "Code" -> {
                 container.visibility = View.GONE
                 etAnswer.visibility = View.VISIBLE
-                etAnswer.hint = if (assignment.type == "Code") "Введите код или вывод программы..." else "Введите ответ..."
+                etAnswer.hint = if (current.type == "Code") "Введите код или вывод программы..." else "Введите ответ..."
             }
         }
 
         btnSubmit.setOnClickListener {
-            val answer = when (assignment.type) {
+            val answer = when (current.type) {
                 "SingleChoice", "MultipleChoice" -> selectedIndices.joinToString(",")
                 else -> etAnswer.text.toString()
             }
@@ -109,6 +109,7 @@ class AssignmentDetailFragment : Fragment() {
     private fun submitAnswer(answer: String, tvResult: TextView, btnSubmit: Button) {
         val prefs = requireContext().getSharedPreferences("merk_session", Context.MODE_PRIVATE)
         val userId = prefs.getInt("userId", 0)
+        val current = assignment ?: return
 
         btnSubmit.isEnabled = false
         tvResult.visibility = View.GONE
@@ -116,23 +117,24 @@ class AssignmentDetailFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = RetrofitClient.api.submitAnswer(
-                    SubmissionRequest(
-                        userId = userId,
-                        assignmentId = assignment.assignmentId,
-                        studentAnswer = answer
-                    )
+                    SubmissionRequest(userId, current.assignmentId, answer)
                 )
-
                 if (response.isSuccessful) {
                     val result = response.body()
-                    tvResult.text = "Оценка: ${result?.grade}/100\n${result?.comment}"
+                    val grade = result?.grade ?: 0
+                    val maxGrade = result?.maxGrade ?: 1  // ИСПРАВЛЕНО
+
+                    tvResult.text = "Оценка: $grade/$maxGrade\n${result?.comment}"
+
+                    // Определяем цвет по проценту
+                    val percentage = if (maxGrade > 0) (grade.toDouble() / maxGrade) * 100 else 0.0
+
                     tvResult.setTextColor(
-                        if (result?.grade == 100)
-                            resources.getColor(R.color.success_green, null)
-                        else if (result?.grade != null && result.grade > 0)
-                            resources.getColor(android.R.color.holo_orange_dark, null)
-                        else
-                            resources.getColor(R.color.error_red, null)
+                        when {
+                            percentage == 100.0 -> resources.getColor(R.color.success_green, null)
+                            percentage > 0 -> resources.getColor(android.R.color.holo_orange_dark, null)
+                            else -> resources.getColor(R.color.error_red, null)
+                        }
                     )
                     tvResult.visibility = View.VISIBLE
                 } else {

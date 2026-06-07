@@ -65,9 +65,20 @@ class SubmissionActivity : AppCompatActivity() {
                     )
                     if (resp.isSuccessful) {
                         val r = resp.body()!!
+                        val maxGrade = r.maxGrade  // ИСПРАВЛЕНО
                         cardResult.visibility = View.VISIBLE
-                        tvGrade.text = "Оценка: ${r.grade}/100"
+                        tvGrade.text = "Оценка: ${r.grade}/$maxGrade"
                         tvComment.text = r.comment
+
+                        // Цвет по проценту
+                        val percentage = if (maxGrade > 0) (r.grade.toDouble() / maxGrade) * 100 else 0.0
+                        tvGrade.setTextColor(
+                            when {
+                                percentage == 100.0 -> getColor(R.color.success_green)
+                                percentage > 0 -> getColor(android.R.color.holo_orange_dark)
+                                else -> getColor(R.color.error_red)
+                            }
+                        )
                         etAnswer.isEnabled = false
                     } else {
                         Toast.makeText(this@SubmissionActivity,

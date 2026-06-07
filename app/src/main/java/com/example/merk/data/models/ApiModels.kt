@@ -37,6 +37,7 @@ data class SubmissionRequest(
 
 data class SubmissionResponse(
     @SerializedName("grade") val grade: Int,
+    @SerializedName("maxGrade") val maxGrade: Int,
     @SerializedName("comment") val comment: String
 )
 
@@ -46,6 +47,7 @@ data class SubmissionItem(
     @SerializedName("assignmentId") val assignmentId: Int,
     @SerializedName("studentAnswer") val studentAnswer: String,
     @SerializedName("grade") val grade: Int?,
+    @SerializedName("maxGrade") val maxGrade: Int? = null,
     @SerializedName("comment") val comment: String?,
     @SerializedName("studentLogin") val studentLogin: String? = null,
     @SerializedName("assignmentTitle") val assignmentTitle: String? = null,
@@ -60,6 +62,7 @@ data class AssignmentStatus(
     @SerializedName("options") val options: String? = null,
     @SerializedName("isCompleted") val isCompleted: Boolean,
     @SerializedName("grade") val grade: Int? = null,
+    @SerializedName("maxGrade") val maxGrade: Int? = null,
     @SerializedName("comment") val comment: String? = null
 ) : java.io.Serializable
 
@@ -69,4 +72,11 @@ data class CreateAssignmentRequest(
     @SerializedName("type") val type: String,
     @SerializedName("options") val options: String? = null,
     @SerializedName("correctAnswer") val correctAnswer: String
+)
+
+data class StudentStats(
+    @SerializedName("totalAttempts") val totalAttempts: Int,
+    @SerializedName("totalGrade") val totalGrade: Int,
+    @SerializedName("totalMax") val totalMax: Int,
+    @SerializedName("averagePercent") val averagePercent: Double
 )

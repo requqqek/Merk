@@ -1,9 +1,9 @@
 package com.example.merk.data.api
 
 import com.example.merk.data.models.*
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.*
-import com.google.gson.annotations.SerializedName
 
 interface ApiService {
 
@@ -25,6 +25,20 @@ interface ApiService {
     @POST("api/Assignment/submit")
     suspend fun submitAnswer(@Body request: SubmissionRequest): Response<SubmissionResponse>
 
+    // НОВЫЕ МЕТОДЫ для редактирования/удаления заданий
+    @GET("api/Assignment/teacher/{teacherId}")
+    suspend fun getTeacherAssignments(@Path("teacherId") teacherId: Int): Response<List<Assignment>>
+
+    @PUT("api/Assignment/{id}")
+    suspend fun updateAssignment(@Path("id") id: Int, @Body request: CreateAssignmentRequest): Response<Assignment>
+
+    @DELETE("api/Assignment/{id}")
+    suspend fun deleteAssignment(@Path("id") id: Int): Response<Any>
+
+    // Статистика студента
+    @GET("api/Assignment/stats/{userId}")
+    suspend fun getStudentStats(@Path("userId") userId: Int): Response<StudentStats>
+
     @GET("api/Teacher/submissions")
     suspend fun getAllSubmissions(
         @Query("studentId") studentId: Int? = null,
@@ -43,6 +57,8 @@ interface ApiService {
     @PUT("api/User/profile")
     suspend fun updateProfile(@Query("userId") userId: Int, @Body request: UpdateProfileRequest): Response<UserProfile>
 
+    @PUT("api/User/change-password")
+    suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Any>
 }
 
 data class StudentItem(
@@ -54,13 +70,11 @@ data class StudentItem(
     @SerializedName("groupName") val groupName: String?
 )
 
-// Группа
 data class GroupItem(
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String
 )
 
-// Профиль пользователя
 data class UserProfile(
     @SerializedName("userId") val userId: Int,
     @SerializedName("login") val login: String,
@@ -71,9 +85,14 @@ data class UserProfile(
     @SerializedName("groupName") val groupName: String?
 )
 
-// Запрос на обновление профиля
 data class UpdateProfileRequest(
     @SerializedName("email") val email: String?,
     @SerializedName("phone") val phone: String?,
     @SerializedName("password") val password: String?
+)
+
+data class ChangePasswordRequest(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("oldPassword") val oldPassword: String,
+    @SerializedName("newPassword") val newPassword: String
 )
