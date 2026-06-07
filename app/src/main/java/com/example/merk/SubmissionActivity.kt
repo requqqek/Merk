@@ -65,12 +65,11 @@ class SubmissionActivity : AppCompatActivity() {
                     )
                     if (resp.isSuccessful) {
                         val r = resp.body()!!
-                        val maxGrade = r.maxGrade  // ИСПРАВЛЕНО
+                        val maxGrade = r.maxGrade
                         cardResult.visibility = View.VISIBLE
                         tvGrade.text = "Оценка: ${r.grade}/$maxGrade"
                         tvComment.text = r.comment
 
-                        // Цвет по проценту
                         val percentage = if (maxGrade > 0) (r.grade.toDouble() / maxGrade) * 100 else 0.0
                         tvGrade.setTextColor(
                             when {

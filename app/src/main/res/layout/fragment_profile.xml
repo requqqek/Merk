@@ -37,7 +37,7 @@
             android:textColor="@color/gray_text"
             android:textSize="14sp" />
 
-        <!-- СТАТИСТИКА (только для студента) -->
+        <!-- КАРТОЧКА СТАТИСТИКИ (видна только студенту) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardStats"
             android:layout_width="match_parent"
@@ -143,7 +143,6 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ИНФОРМАЦИЯ -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -173,17 +172,65 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/gray_text"
                     android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Email"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:hint="Введите email"
+                    android:inputType="textEmailAddress"
+                    android:padding="12dp"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Телефон"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/etPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/edit_text_bg"
+                    android:hint="Введите телефон"
+                    android:inputType="phone"
+                    android:padding="12dp"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- КНОПКА СМЕНЫ ПАРОЛЯ -->
         <Button
-            android:id="@+id/btnChangePassword"
+            android:id="@+id/btnSave"
             style="@style/GreenButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="24dp"
-            android:text="Изменить пароль" />
+            android:text="Сохранить изменения" />
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btnLogout"

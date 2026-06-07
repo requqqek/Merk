@@ -1,6 +1,7 @@
 package com.example.merk.data.api
 
 import com.example.merk.data.models.*
+import com.example.merk.data.models.UpdateProfileRequest
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.*
@@ -30,7 +31,10 @@ interface ApiService {
     suspend fun getTeacherAssignments(@Path("teacherId") teacherId: Int): Response<List<Assignment>>
 
     @PUT("api/Assignment/{id}")
-    suspend fun updateAssignment(@Path("id") id: Int, @Body request: CreateAssignmentRequest): Response<Assignment>
+    suspend fun updateAssignment(
+        @Path("id") id: Int,
+        @Body request: CreateAssignmentRequest
+    ): Response<Assignment>
 
     @DELETE("api/Assignment/{id}")
     suspend fun deleteAssignment(@Path("id") id: Int): Response<Any>
@@ -55,7 +59,10 @@ interface ApiService {
     suspend fun getProfile(@Query("userId") userId: Int): Response<UserProfile>
 
     @PUT("api/User/profile")
-    suspend fun updateProfile(@Query("userId") userId: Int, @Body request: UpdateProfileRequest): Response<UserProfile>
+    suspend fun updateProfile(
+        @Query("userId") userId: Int,
+        @Body request: UpdateProfileRequest
+    ): Response<UserProfile>
 
     @PUT("api/User/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Any>

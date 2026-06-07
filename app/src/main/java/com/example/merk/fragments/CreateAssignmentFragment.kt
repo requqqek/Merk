@@ -86,7 +86,9 @@ class CreateAssignmentFragment : Fragment() {
                     return@setOnClickListener
                 }
                 val options = optionsText.split(",").map { it.trim() }
-                com.google.gson.Gson().toJson(options)
+                val json = com.google.gson.Gson().toJson(options)
+                android.util.Log.d("CreateAssignment", "Отправка options JSON: $json")
+                json
             } else null
 
             pb.visibility = View.VISIBLE

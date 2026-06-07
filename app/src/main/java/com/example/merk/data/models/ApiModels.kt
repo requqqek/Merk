@@ -2,6 +2,11 @@ package com.example.merk.data.models
 
 import com.google.gson.annotations.SerializedName
 
+data class UpdateProfileRequest(
+    @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("password") val password: String?
+)
 data class LoginRequest(
     @SerializedName("login") val login: String,
     @SerializedName("password") val password: String
