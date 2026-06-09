@@ -21,7 +21,6 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <!-- Кнопка создания задания (только для учителя) -->
         <Button
             android:id="@+id/btnCreateAssignment"
             style="@style/GreenButton"
@@ -31,7 +30,26 @@
             android:text="Создать задание"
             android:visibility="gone" />
 
-        <!-- Кнопка смены пароля -->
+        <!-- НОВОЕ: добавить студента (учитель) -->
+        <Button
+            android:id="@+id/btnAddStudent"
+            style="@style/GreenButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:text="Добавить студента"
+            android:visibility="gone" />
+
+        <!-- НОВОЕ: коды приглашений (учитель) -->
+        <Button
+            android:id="@+id/btnInviteCodes"
+            style="@style/GreenButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:text="Коды приглашений"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/btnChangePassword"
             style="@style/GreenButton"

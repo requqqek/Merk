@@ -7,7 +7,6 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
-
     @POST("api/Auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
@@ -26,7 +25,6 @@ interface ApiService {
     @POST("api/Assignment/submit")
     suspend fun submitAnswer(@Body request: SubmissionRequest): Response<SubmissionResponse>
 
-    // НОВЫЕ МЕТОДЫ для редактирования/удаления заданий
     @GET("api/Assignment/teacher/{teacherId}")
     suspend fun getTeacherAssignments(@Path("teacherId") teacherId: Int): Response<List<Assignment>>
 
@@ -39,18 +37,18 @@ interface ApiService {
     @DELETE("api/Assignment/{id}")
     suspend fun deleteAssignment(@Path("id") id: Int): Response<Any>
 
-    // Статистика студента
     @GET("api/Assignment/stats/{userId}")
     suspend fun getStudentStats(@Path("userId") userId: Int): Response<StudentStats>
 
     @GET("api/Teacher/submissions")
     suspend fun getAllSubmissions(
         @Query("studentId") studentId: Int? = null,
-        @Query("groupId") groupId: Int? = null
+        @Query("groupId") groupId: Int? = null,
+        @Query("teacherId") teacherId: Int? = null
     ): Response<List<SubmissionItem>>
 
     @GET("api/Teacher/students")
-    suspend fun getTeacherStudents(): Response<List<StudentItem>>
+    suspend fun getTeacherStudents(@Query("teacherId") teacherId: Int? = null): Response<List<StudentItem>>
 
     @GET("api/Groups")
     suspend fun getGroups(): Response<List<GroupItem>>
@@ -66,6 +64,13 @@ interface ApiService {
 
     @PUT("api/User/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Any>
+
+    // Коды приглашений
+    @GET("api/Invitation/teacher/{teacherId}")
+    suspend fun getInviteCodes(@Path("teacherId") teacherId: Int): Response<List<InviteCodeItem>>
+
+    @POST("api/Invitation")
+    suspend fun createInviteCode(@Body request: CreateInviteCodeRequest): Response<InviteCodeItem>
 }
 
 data class StudentItem(
@@ -92,14 +97,21 @@ data class UserProfile(
     @SerializedName("groupName") val groupName: String?
 )
 
-data class UpdateProfileRequest(
-    @SerializedName("email") val email: String?,
-    @SerializedName("phone") val phone: String?,
-    @SerializedName("password") val password: String?
-)
-
 data class ChangePasswordRequest(
     @SerializedName("userId") val userId: Int,
     @SerializedName("oldPassword") val oldPassword: String,
     @SerializedName("newPassword") val newPassword: String
+)
+
+data class InviteCodeItem(
+    @SerializedName("id") val id: Int,
+    @SerializedName("code") val code: String,
+    @SerializedName("groupId") val groupId: Int?,
+    @SerializedName("groupName") val groupName: String?,
+    @SerializedName("isActive") val isActive: Boolean
+)
+
+data class CreateInviteCodeRequest(
+    @SerializedName("teacherId") val teacherId: Int,
+    @SerializedName("groupId") val groupId: Int? = null
 )

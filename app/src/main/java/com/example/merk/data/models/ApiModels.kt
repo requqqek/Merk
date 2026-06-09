@@ -7,6 +7,7 @@ data class UpdateProfileRequest(
     @SerializedName("phone") val phone: String?,
     @SerializedName("password") val password: String?
 )
+
 data class LoginRequest(
     @SerializedName("login") val login: String,
     @SerializedName("password") val password: String
@@ -22,7 +23,10 @@ data class CreateStudentRequest(
     @SerializedName("login") val login: String,
     @SerializedName("password") val password: String,
     @SerializedName("email") val email: String? = null,
-    @SerializedName("phone") val phone: String? = null
+    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("teacherId") val teacherId: Int? = null,
+    @SerializedName("groupId") val groupId: Int? = null,
+    @SerializedName("inviteCode") val inviteCode: String? = null
 )
 
 data class Assignment(
@@ -31,7 +35,8 @@ data class Assignment(
     @SerializedName("description") val description: String,
     @SerializedName("type") val type: String,
     @SerializedName("options") val options: String? = null,
-    @SerializedName("correctAnswer") val correctAnswer: String
+    @SerializedName("correctAnswer") val correctAnswer: String,
+    @SerializedName("groupId") val groupId: Int? = null
 )
 
 data class SubmissionRequest(
@@ -76,7 +81,9 @@ data class CreateAssignmentRequest(
     @SerializedName("description") val description: String,
     @SerializedName("type") val type: String,
     @SerializedName("options") val options: String? = null,
-    @SerializedName("correctAnswer") val correctAnswer: String
+    @SerializedName("correctAnswer") val correctAnswer: String,
+    @SerializedName("teacherId") val teacherId: Int = 0,
+    @SerializedName("groupId") val groupId: Int? = null
 )
 
 data class StudentStats(

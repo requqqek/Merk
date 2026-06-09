@@ -1,5 +1,6 @@
 package com.example.merk.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +20,6 @@ import com.example.merk.data.api.RetrofitClient
 import com.example.merk.data.api.StudentItem
 import com.example.merk.data.models.SubmissionItem
 import kotlinx.coroutines.launch
-import kotlin.collections.map
 
 class StatsFragment : Fragment() {
 
@@ -42,26 +42,24 @@ class StatsFragment : Fragment() {
         val spinnerStudent = view.findViewById<Spinner>(R.id.spinnerStudent)
 
         rv.layoutManager = LinearLayoutManager(requireContext())
-
         pb.visibility = View.VISIBLE
+
+        val teacherId = requireContext()
+            .getSharedPreferences("merk_session", Context.MODE_PRIVATE)
+            .getInt("userId", 0)
 
         lifecycleScope.launch {
             try {
-                // Загружаем студентов и попытки параллельно
-                val studentsResp = RetrofitClient.api.getTeacherStudents()
-                val submissionsResp = RetrofitClient.api.getAllSubmissions()
+                val studentsResp = RetrofitClient.api.getTeacherStudents(teacherId)
+                val submissionsResp = RetrofitClient.api.getAllSubmissions(teacherId = teacherId)
 
                 if (studentsResp.isSuccessful && submissionsResp.isSuccessful) {
                     allStudents = studentsResp.body() ?: emptyList()
                     allSubmissions = submissionsResp.body() ?: emptyList()
 
-                    // Заполняем спиннер
                     val studentNames = listOf("Все студенты") + allStudents.map { it.login }
-                    val adapter = ArrayAdapter(
-                        requireContext(),
-                        android.R.layout.simple_spinner_item,
-                        studentNames
-                    )
+                    val adapter = ArrayAdapter(requireContext(),
+                        android.R.layout.simple_spinner_item, studentNames)
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerStudent.adapter = adapter
 
@@ -73,7 +71,6 @@ class StatsFragment : Fragment() {
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
 
-                    // Первая загрузка — все студенты
                     updateStats(tvStudents, tvAttempts, tvAvg, rv, tvEmpty)
                 } else {
                     tvEmpty.text = "Ошибка загрузки"; tvEmpty.visibility = View.VISIBLE
@@ -93,18 +90,19 @@ class StatsFragment : Fragment() {
         rv: RecyclerView,
         tvEmpty: TextView
     ) {
-        // Фильтруем попытки по выбранному студенту
-        val filtered = if (selectedStudentId == null) {
-            allSubmissions
-        } else {
-            allSubmissions.filter { it.userId == selectedStudentId }
-        }
+        val filtered = if (selectedStudentId == null) allSubmissions
+        else allSubmissions.filter { it.userId == selectedStudentId }
 
         tvStudents.text = allStudents.size.toString()
         tvAttempts.text = filtered.size.toString()
 
-        val grades = filtered.mapNotNull { it.grade }
-        tvAvg.text = if (grades.isNotEmpty()) "%.1f".format(grades.average()) else "—"
+        // Корректный средний балл — средний ПРОЦЕНТ по попыткам (разные maxGrade)
+        val percents = filtered.mapNotNull { s ->
+            val max = s.maxGrade ?: 0
+            val grade = s.grade ?: 0
+            if (max > 0) grade.toDouble() / max * 100 else null
+        }
+        tvAvg.text = if (percents.isNotEmpty()) "%.1f%%".format(percents.average()) else "—"
 
         rv.adapter = SubmissionsAdapter(filtered)
         tvEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE

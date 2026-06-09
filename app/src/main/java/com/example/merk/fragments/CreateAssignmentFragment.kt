@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.merk.R
 import com.example.merk.TeacherAssignmentsAdapter
+import com.example.merk.data.api.GroupItem
 import com.example.merk.data.api.RetrofitClient
 import com.example.merk.data.models.Assignment
 import com.example.merk.data.models.CreateAssignmentRequest
@@ -20,6 +21,7 @@ class CreateAssignmentFragment : Fragment() {
 
     private var isEditing = false
     private var editingAssignmentId: Int? = null
+    private var groups: List<GroupItem> = emptyList()
 
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View =
         i.inflate(R.layout.fragment_create_assignment, c, false)
@@ -32,27 +34,26 @@ class CreateAssignmentFragment : Fragment() {
         val etCorrectAnswer = view.findViewById<EditText>(R.id.etCorrectAnswer)
         val etOptions = view.findViewById<EditText>(R.id.etOptions)
         val spinnerType = view.findViewById<Spinner>(R.id.spinnerType)
+        val spinnerGroup = view.findViewById<Spinner>(R.id.spinnerGroup)
         val btnCreate = view.findViewById<Button>(R.id.btnCreate)
         val pb = view.findViewById<ProgressBar>(R.id.progressBar)
         val tvResult = view.findViewById<TextView>(R.id.tvResult)
 
-        // Список заданий учителя
         val rvAssignments = view.findViewById<RecyclerView>(R.id.rvAssignments)
         rvAssignments.layoutManager = LinearLayoutManager(requireContext())
 
         val types = arrayOf("SingleChoice", "MultipleChoice", "TextInput", "Code")
         val typeNames = arrayOf("Выбор одного ответа", "Выбор нескольких ответов", "Текстовый ответ", "Код")
-
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, typeNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerType.adapter = adapter
+        val typeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, typeNames)
+        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerType.adapter = typeAdapter
 
         spinnerType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 val type = types[pos]
                 if (type == "SingleChoice" || type == "MultipleChoice") {
                     etOptions.visibility = View.VISIBLE
-                    etCorrectAnswer.hint = "Индексы правильных ответов: 1 (или 0,2)"
+                    etCorrectAnswer.hint = "Индексы (с 0): 1 или 0,2"
                 } else {
                     etOptions.visibility = View.GONE
                     etCorrectAnswer.hint = if (type == "Code") "Ожидаемый вывод программы" else "Правильный ответ"
@@ -61,7 +62,7 @@ class CreateAssignmentFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Загружаем список заданий
+        loadGroups(spinnerGroup)
         loadTeacherAssignments(rvAssignments, pb, tvResult)
 
         btnCreate.setOnClickListener {
@@ -72,56 +73,55 @@ class CreateAssignmentFragment : Fragment() {
             val type = types[spinnerType.selectedItemPosition]
 
             if (title.isEmpty() || description.isEmpty() || answer.isEmpty()) {
-                tvResult.text = "Заполните все обязательные поля"
-                tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                tvResult.visibility = View.VISIBLE
+                showResult(tvResult, "Заполните все обязательные поля", false)
                 return@setOnClickListener
             }
 
             val optionsJson = if (type == "SingleChoice" || type == "MultipleChoice") {
                 if (optionsText.isEmpty()) {
-                    tvResult.text = "Введите варианты ответов"
-                    tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                    tvResult.visibility = View.VISIBLE
+                    showResult(tvResult, "Введите варианты ответов", false)
                     return@setOnClickListener
                 }
-                val options = optionsText.split(",").map { it.trim() }
-                val json = com.google.gson.Gson().toJson(options)
-                android.util.Log.d("CreateAssignment", "Отправка options JSON: $json")
-                json
+                val options = optionsText.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                com.google.gson.Gson().toJson(options)
             } else null
+
+            val groupId = selectedGroupId(spinnerGroup)
+            val teacherId = requireContext()
+                .getSharedPreferences("merk_session", android.content.Context.MODE_PRIVATE)
+                .getInt("userId", 0)
 
             pb.visibility = View.VISIBLE
             btnCreate.isEnabled = false
 
             lifecycleScope.launch {
                 try {
-                    val request = CreateAssignmentRequest(title, description, type, optionsJson, answer)
-
-                    val resp = if (isEditing && editingAssignmentId != null) {
+                    val request = CreateAssignmentRequest(
+                        title = title,
+                        description = description,
+                        type = type,
+                        options = optionsJson,
+                        correctAnswer = answer,
+                        teacherId = teacherId,
+                        groupId = groupId
+                    )
+                    val resp = if (isEditing && editingAssignmentId != null)
                         RetrofitClient.api.updateAssignment(editingAssignmentId!!, request)
-                    } else {
+                    else
                         RetrofitClient.api.createAssignment(request)
-                    }
 
                     if (resp.isSuccessful) {
-                        tvResult.text = if (isEditing) "✓ Задание обновлено!" else "✓ Задание создано успешно!"
-                        tvResult.setTextColor(resources.getColor(R.color.success_green, null))
-                        tvResult.visibility = View.VISIBLE
+                        showResult(tvResult, if (isEditing) "✓ Задание обновлено!" else "✓ Задание создано!", true)
                         clearForm(etTitle, etDescription, etCorrectAnswer, etOptions)
                         isEditing = false
                         editingAssignmentId = null
                         btnCreate.text = "Создать задание"
                         loadTeacherAssignments(rvAssignments, pb, tvResult)
                     } else {
-                        tvResult.text = "Ошибка: ${resp.code()}"
-                        tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                        tvResult.visibility = View.VISIBLE
+                        showResult(tvResult, "Ошибка: ${resp.code()}", false)
                     }
                 } catch (e: Exception) {
-                    tvResult.text = "Ошибка: ${e.message}"
-                    tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                    tvResult.visibility = View.VISIBLE
+                    showResult(tvResult, "Ошибка: ${e.message}", false)
                 } finally {
                     pb.visibility = View.GONE
                     btnCreate.isEnabled = true
@@ -130,10 +130,36 @@ class CreateAssignmentFragment : Fragment() {
         }
     }
 
-    private fun loadTeacherAssignments(rv: RecyclerView, pb: ProgressBar, tvResult: TextView) {
-        val prefs = requireContext().getSharedPreferences("merk_session", android.content.Context.MODE_PRIVATE)
-        val teacherId = prefs.getInt("userId", 0)
+    private fun showResult(tv: TextView, msg: String, ok: Boolean) {
+        tv.text = msg
+        tv.setTextColor(resources.getColor(if (ok) R.color.success_green else R.color.error_red, null))
+        tv.visibility = View.VISIBLE
+    }
 
+    private fun loadGroups(spinnerGroup: Spinner) {
+        lifecycleScope.launch {
+            try {
+                val resp = RetrofitClient.api.getGroups()
+                if (resp.isSuccessful) {
+                    groups = resp.body() ?: emptyList()
+                    val names = listOf("Все группы") + groups.map { it.name }
+                    val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerGroup.adapter = adapter
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun selectedGroupId(spinnerGroup: Spinner): Int? {
+        val pos = spinnerGroup.selectedItemPosition
+        return if (pos <= 0 || pos - 1 >= groups.size) null else groups[pos - 1].id
+    }
+
+    private fun loadTeacherAssignments(rv: RecyclerView, pb: ProgressBar, tvResult: TextView) {
+        val teacherId = requireContext()
+            .getSharedPreferences("merk_session", android.content.Context.MODE_PRIVATE)
+            .getInt("userId", 0)
         lifecycleScope.launch {
             try {
                 val resp = RetrofitClient.api.getTeacherAssignments(teacherId)
@@ -141,13 +167,11 @@ class CreateAssignmentFragment : Fragment() {
                     val list = resp.body() ?: emptyList()
                     rv.adapter = TeacherAssignmentsAdapter(
                         list,
-                        onEdit = { assignment -> editAssignment(assignment) },
-                        onDelete = { assignment -> deleteAssignment(assignment, pb, tvResult, rv) }
+                        onEdit = { editAssignment(it) },
+                        onDelete = { deleteAssignment(it, pb, tvResult, rv) }
                     )
                 }
-            } catch (e: Exception) {
-                // Тихо игнорируем
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -160,6 +184,7 @@ class CreateAssignmentFragment : Fragment() {
         val etCorrectAnswer = view?.findViewById<EditText>(R.id.etCorrectAnswer)
         val etOptions = view?.findViewById<EditText>(R.id.etOptions)
         val spinnerType = view?.findViewById<Spinner>(R.id.spinnerType)
+        val spinnerGroup = view?.findViewById<Spinner>(R.id.spinnerGroup)
         val btnCreate = view?.findViewById<Button>(R.id.btnCreate)
 
         etTitle?.setText(assignment.title)
@@ -170,16 +195,18 @@ class CreateAssignmentFragment : Fragment() {
         val typeIndex = types.indexOf(assignment.type)
         if (typeIndex >= 0) spinnerType?.setSelection(typeIndex)
 
-        if (assignment.options != null) {
+        if (!assignment.options.isNullOrEmpty()) {
             try {
                 val options = com.google.gson.Gson().fromJson(assignment.options, Array<String>::class.java)
                 etOptions?.setText(options.joinToString(", "))
-            } catch (e: Exception) {}
+            } catch (_: Exception) {}
         }
 
-        btnCreate?.text = "Сохранить изменения"
+        val gPos = if (assignment.groupId == null) 0
+        else groups.indexOfFirst { it.id == assignment.groupId }.let { if (it < 0) 0 else it + 1 }
+        spinnerGroup?.setSelection(gPos)
 
-        // Прокручиваем к форме
+        btnCreate?.text = "Сохранить изменения"
         view?.findViewById<ScrollView>(R.id.scrollView)?.smoothScrollTo(0, 0)
     }
 
@@ -193,19 +220,11 @@ class CreateAssignmentFragment : Fragment() {
                         pb.visibility = View.VISIBLE
                         val resp = RetrofitClient.api.deleteAssignment(assignment.id)
                         if (resp.isSuccessful) {
-                            tvResult.text = "✓ Задание удалено"
-                            tvResult.setTextColor(resources.getColor(R.color.success_green, null))
-                            tvResult.visibility = View.VISIBLE
+                            showResult(tvResult, "✓ Задание удалено", true)
                             loadTeacherAssignments(rv, pb, tvResult)
-                        } else {
-                            tvResult.text = "Ошибка удаления: ${resp.code()}"
-                            tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                            tvResult.visibility = View.VISIBLE
-                        }
+                        } else showResult(tvResult, "Ошибка удаления: ${resp.code()}", false)
                     } catch (e: Exception) {
-                        tvResult.text = "Ошибка: ${e.message}"
-                        tvResult.setTextColor(resources.getColor(R.color.error_red, null))
-                        tvResult.visibility = View.VISIBLE
+                        showResult(tvResult, "Ошибка: ${e.message}", false)
                     } finally {
                         pb.visibility = View.GONE
                     }
@@ -215,7 +234,5 @@ class CreateAssignmentFragment : Fragment() {
             .show()
     }
 
-    private fun clearForm(vararg fields: EditText) {
-        fields.forEach { it.text.clear() }
-    }
+    private fun clearForm(vararg fields: EditText) = fields.forEach { it.text.clear() }
 }

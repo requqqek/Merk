@@ -146,6 +146,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etLogin" />
 
+        <!-- НОВОЕ: код приглашения -->
+        <EditText
+            android:id="@+id/etInviteCode"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/edit_text_bg"
+            android:hint="Код приглашения"
+            android:inputType="textCapCharacters"
+            android:padding="14dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray_text"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etName" />
+
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
@@ -154,7 +173,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etName" />
+            app:layout_constraintTop_toBottomOf="@id/etInviteCode" />
 
         <Button
             android:id="@+id/btnBack"
@@ -181,6 +200,5 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/btnBack"
             app:layout_constraintTop_toBottomOf="@id/progressBar" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
