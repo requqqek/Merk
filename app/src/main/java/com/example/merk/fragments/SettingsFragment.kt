@@ -3,6 +3,8 @@ package com.example.merk.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.text.InputType
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.merk.R
 import com.example.merk.data.api.ChangePasswordRequest
+import com.example.merk.data.api.CreateGroupRequest
 import com.example.merk.data.api.CreateInviteCodeRequest
 import com.example.merk.data.api.GroupItem
 import com.example.merk.data.api.RetrofitClient
@@ -33,19 +36,25 @@ class SettingsFragment : Fragment() {
         val role = prefs.getString("role", "") ?: ""
 
         val btnCreateAssignment = view.findViewById<Button>(R.id.btnCreateAssignment)
+        val btnCreateGroup = view.findViewById<Button>(R.id.btnCreateGroup)
         val btnAddStudent = view.findViewById<Button>(R.id.btnAddStudent)
         val btnInviteCodes = view.findViewById<Button>(R.id.btnInviteCodes)
         val btnChangePassword = view.findViewById<Button>(R.id.btnChangePassword)
+        val btnManageStudents = view.findViewById<Button>(R.id.btnManageStudents)
 
         if (role == "Teacher") {
             btnCreateAssignment.visibility = View.VISIBLE
+            btnCreateGroup.visibility = View.VISIBLE
             btnAddStudent.visibility = View.VISIBLE
             btnInviteCodes.visibility = View.VISIBLE
+            btnManageStudents.visibility = View.VISIBLE
             loadGroups()
         } else {
             btnCreateAssignment.visibility = View.GONE
+            btnCreateGroup.visibility = View.GONE
             btnAddStudent.visibility = View.GONE
             btnInviteCodes.visibility = View.GONE
+            btnManageStudents.visibility = View.GONE
         }
 
         btnCreateAssignment.setOnClickListener {
@@ -54,10 +63,18 @@ class SettingsFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
+        btnCreateGroup.setOnClickListener { showCreateGroupDialog() }
         btnAddStudent.setOnClickListener { showAddStudentDialog(userId) }
         btnInviteCodes.setOnClickListener { showInviteCodesDialog(userId) }
         btnChangePassword.setOnClickListener { showChangePasswordDialog(userId) }
+        btnManageStudents.setOnClickListener { showManageStudentsDialog(userId) }
     }
+
+    private fun isValidEmail(email: String): Boolean =
+        email.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+    private fun isValidPhone(phone: String): Boolean =
+        phone.isEmpty() || Patterns.PHONE.matcher(phone).matches()
 
     private fun loadGroups() {
         lifecycleScope.launch {
@@ -65,6 +82,38 @@ class SettingsFragment : Fragment() {
                 val resp = RetrofitClient.api.getGroups()
                 if (resp.isSuccessful) groups = resp.body() ?: emptyList()
             } catch (_: Exception) {}
+        }
+    }
+
+    private fun showCreateGroupDialog() {
+        val input = EditText(requireContext()).apply {
+            hint = "Например: ИСП-105"
+            inputType = InputType.TYPE_CLASS_TEXT
+            setPadding(40, 30, 40, 30)
+        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Создать группу")
+            .setView(input)
+            .setPositiveButton("Создать") { dialog, _ ->
+                val name = input.text.toString().trim()
+                if (name.isEmpty()) toast("Введите название группы") else createGroup(name)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun createGroup(name: String) {
+        lifecycleScope.launch {
+            try {
+                val resp = RetrofitClient.api.createGroup(CreateGroupRequest(name))
+                if (resp.isSuccessful) {
+                    toast("✓ Группа \"$name\" создана")
+                    loadGroups()
+                } else toast(resp.errorBody()?.string() ?: "Ошибка создания группы")
+            } catch (e: Exception) {
+                toast("Ошибка сети: ${e.message}")
+            }
         }
     }
 
@@ -78,10 +127,15 @@ class SettingsFragment : Fragment() {
         val etPassword = dialogView.findViewById<EditText>(R.id.etPassword)
         val etConfirm = dialogView.findViewById<EditText>(R.id.etConfirmPassword)
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Добавить студента")
             .setView(dialogView)
-            .setPositiveButton("Создать") { dialog, _ ->
+            .setPositiveButton("Создать", null) // обработчик ниже, чтобы не закрывать при ошибке
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val login = etLogin.text.toString().trim()
                 val email = etEmail.text.toString().trim()
                 val phone = etPhone.text.toString().trim()
@@ -90,19 +144,31 @@ class SettingsFragment : Fragment() {
                 val confirm = etConfirm.text.toString().trim()
 
                 when {
-                    login.isEmpty() || pass.isEmpty() ->
+                    login.isEmpty() || pass.isEmpty() -> {
+                        etLogin.error = if (login.isEmpty()) "Введите логин" else null
                         toast("Заполните обязательные поля")
-                    pass.length < 6 -> toast("Пароль минимум 6 символов")
-                    pass != confirm -> toast("Пароли не совпадают")
+                    }
+                    !isValidEmail(email) -> {
+                        etEmail.error = "Некорректный email (пример: name@mail.ru)"
+                    }
+                    !isValidPhone(phone) -> {
+                        etPhone.error = "Некорректный телефон"
+                    }
+                    pass.length < 6 -> {
+                        etPassword.error = "Минимум 6 символов"
+                    }
+                    pass != confirm -> {
+                        etConfirm.error = "Пароли не совпадают"
+                    }
                     else -> {
                         val groupId = groups.firstOrNull { it.name.equals(groupName, true) }?.id
                         createStudent(login, email, phone, pass, teacherId, groupId)
+                        dialog.dismiss()
                     }
                 }
-                dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun createStudent(login: String, email: String, phone: String, pass: String, teacherId: Int, groupId: Int?) {
@@ -216,7 +282,49 @@ class SettingsFragment : Fragment() {
             }
         }
     }
+    private fun showManageStudentsDialog(teacherId: Int) {
+        lifecycleScope.launch {
+            try {
+                val resp = RetrofitClient.api.getTeacherStudents(teacherId)
+                val students = if (resp.isSuccessful) resp.body() ?: emptyList() else emptyList()
+                if (students.isEmpty()) { toast("Студентов пока нет"); return@launch }
+
+                val labels = students.map { "${it.login} — ${it.groupName ?: "без группы"}" }.toTypedArray()
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Студенты (нажмите для удаления)")
+                    .setItems(labels) { _, which ->
+                        val st = students[which]
+                        confirmDeleteStudent(st.userId, st.login)
+                    }
+                    .setNegativeButton("Закрыть", null)
+                    .show()
+            } catch (e: Exception) {
+                toast("Ошибка: ${e.message}")
+            }
+        }
+    }
+
+    private fun confirmDeleteStudent(studentId: Int, login: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Удалить студента?")
+            .setMessage("Студент \"$login\" и все его попытки будут удалены безвозвратно.")
+            .setPositiveButton("Удалить") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val resp = RetrofitClient.api.deleteStudent(studentId)
+                        if (resp.isSuccessful) toast("✓ Студент удалён")
+                        else toast("Ошибка: ${resp.code()}")
+                    } catch (e: Exception) {
+                        toast("Ошибка: ${e.message}")
+                    }
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
 
     private fun toast(msg: String) =
         Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+
 }
+

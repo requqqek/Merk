@@ -27,10 +27,19 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginBottom="12dp"
-            android:text="Создать задание"
+            android:text="Управление заданиями"
             android:visibility="gone" />
 
-        <!-- НОВОЕ: добавить студента (учитель) -->
+        <!-- НОВОЕ: создать группу (только учитель) -->
+        <Button
+            android:id="@+id/btnCreateGroup"
+            style="@style/GreenButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:text="Создать группу"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/btnAddStudent"
             style="@style/GreenButton"
@@ -40,7 +49,15 @@
             android:text="Добавить студента"
             android:visibility="gone" />
 
-        <!-- НОВОЕ: коды приглашений (учитель) -->
+        <Button
+            android:id="@+id/btnManageStudents"
+            style="@style/GreenButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginBottom="12dp"
+            android:text="Студенты (удаление)"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/btnInviteCodes"
             style="@style/GreenButton"
@@ -96,28 +113,6 @@
             app:cardBackgroundColor="@color/card_bg"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Сервер"
-                    android:textColor="@color/gray_text"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="http://10.0.2.2:5000/"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView

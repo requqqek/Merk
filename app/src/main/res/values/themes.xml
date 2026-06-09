@@ -7,6 +7,10 @@
         <item name="colorSecondary">@color/colorPrimary</item>
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:windowBackground">@color/white</item>
+
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <!-- тёмные иконки на светлом зелёном фоне -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="GreenButton" parent="Widget.MaterialComponents.Button">

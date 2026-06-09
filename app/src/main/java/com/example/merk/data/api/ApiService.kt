@@ -53,6 +53,13 @@ interface ApiService {
     @GET("api/Groups")
     suspend fun getGroups(): Response<List<GroupItem>>
 
+    @DELETE("api/Teacher/students/{studentId}")
+    suspend fun deleteStudent(@Path("studentId") studentId: Int): Response<Any>
+
+    // НОВОЕ: создание группы
+    @POST("api/Groups")
+    suspend fun createGroup(@Body request: CreateGroupRequest): Response<GroupItem>
+
     @GET("api/User/profile")
     suspend fun getProfile(@Query("userId") userId: Int): Response<UserProfile>
 
@@ -65,7 +72,6 @@ interface ApiService {
     @PUT("api/User/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Any>
 
-    // Коды приглашений
     @GET("api/Invitation/teacher/{teacherId}")
     suspend fun getInviteCodes(@Path("teacherId") teacherId: Int): Response<List<InviteCodeItem>>
 
@@ -84,6 +90,10 @@ data class StudentItem(
 
 data class GroupItem(
     @SerializedName("id") val id: Int,
+    @SerializedName("name") val name: String
+)
+
+data class CreateGroupRequest(
     @SerializedName("name") val name: String
 )
 
